@@ -28,41 +28,50 @@ headers = {
 }
 
 now = datetime.datetime.utcnow()
-start_time = (now - datetime.timedelta(days=180)).isoformat("T") + "Z"
+start_time = (now - datetime.timedelta(days=115)).isoformat("T") + "Z"
 
 # Define full tank config
 tanks_and_nurseries = {
-    "Tank1": {
-        "temp": ('LSdata0008', '10.124.101.104'),
-        "PH": ('LSdata0008', '10.124.101.104'),
+"Tank1": {
+        "Temperature": ('LSdata0101', '10.124.101.115'),
+        "PH": ('LSdata0101', '10.124.101.115'),
         "DO mg/L": ('LSdata0010', '10.124.101.101'),
         "CO2 concentration": ('LSdata0022', '10.124.101.108'),
         "Salinity": ('LSdata0027', '10.124.101.106'),
         "Turbidity": ('LSdata0018', '10.124.101.103')
     },
     "Tank2": {
-        "temp": ('LSdata0008', '10.124.102.104'),
-        "PH": ('LSdata0008', '10.124.102.104'),
+        "Temperature": ('LSdata0101', '10.124.102.114'),
+        "PH": ('LSdata0101', '10.124.102.104'),
         "DO mg/L": ('LSdata0010', '10.124.102.101'),
         "CO2 concentration": ('LSdata0022', '10.124.102.108'),
         "Salinity": ('LSdata0027', '10.124.102.106'),
         "Turbidity": ('LSdata0018', '10.124.102.103')
     },
     "Tank3": {
-        "temp": ('LSdata0008', '10.124.103.104'),
-        "PH": ('LSdata0008', '10.124.103.104'),
+        "Temperature": ('LSdata0101', '10.124.103.114'),
+        "PH": ('LSdata0101', '10.124.103.104'),
         "DO mg/L": ('LSdata0010', '10.124.103.101'),
         "CO2 concentration": ('LSdata0022', '10.124.103.107'),
         "Salinity": ('LSdata0027', '10.124.103.106'),
         "Turbidity": ('LSdata0018', '10.124.103.103')
     },
     "Tank4": {
-        "temp": ('LSdata0008', '10.124.104.104'),
-        "PH": ('LSdata0008', '10.124.104.104'),
+        "Temperature": ('LSdata0101', '10.124.104.114'),
+        "PH": ('LSdata0101', '10.124.104.104'),
         "DO mg/L": ('LSdata0010', '10.124.104.101'),
         "CO2 concentration": ('LSdata0022', '10.124.104.107'),
         "Salinity": ('LSdata0027', '10.124.104.106'),
         "Turbidity": ('LSdata0018', '10.124.104.103')
+    },
+
+    "Tank5": {
+        "Temperature": ('LSdata0101', '10.124.105.100'),
+        "PH": ('LSdata0101', '10.124.105.100'),
+        "DO mg/L": ('LSdata0010', '10.124.105.100'),
+        "CO2 concentration": ('LSdata0022', '10.124.105.100'),
+        "Salinity": ('LSdata0027', '10.124.105.100'),
+        "Turbidity": ('LSdata0018', '10.124.105.100')
     },
     # Repeat for Tank2, Tank3, Tank4, and NurseryA, B, C, D
     # Example for NurseryA
@@ -154,7 +163,7 @@ def fetch_data(ip, measurement, field):
 def analyze_param(values, param_name=None):
     values_clean = [v for v in values if v != 0 and v is not None and not np.isnan(v)]
     if param_name == "Turbidity":
-        values_clean = [v for v in values_clean if v <= 500]
+        values_clean = [v for v in values_clean if v <= 400]
     if not values_clean:
         return None
     avg = np.mean(values_clean)
@@ -188,7 +197,7 @@ def plot_all_params_per_tank(tank, param_data):
 results = defaultdict(dict)
 
 param_aliases = {
-    "temp": "Temperature",
+    #"temp": "Temperature",
     #"CO2_water": "CO2 concentration"
 }
 

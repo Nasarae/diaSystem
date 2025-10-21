@@ -3,12 +3,12 @@
 import os
 import glob
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import math
-from itertools import combinations
 from fpdf import FPDF
-import re
+import warnings
+from pandas.api.types import is_object_dtype
+
+# Silence specific openpyxl warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 # === CONFIGURATION ===
 INPUT_DIR = "./input_excels"
@@ -64,7 +64,8 @@ VALUE_TRANSLATION_MAP = {
     "Tote haben harte Schale": "Dead ones have hard shell",
     "Tote haben weiche Schale": "Dead ones have soft shell",
     "Viele Tote": "Many dead",
-    "keine Schalen": "No shells"
+    "keine Schalen": "No shells",
+    "Leicht GefÃ¼llt": "Lightly filled"
 }
 
 OBS_COLUMNS = [
@@ -86,7 +87,7 @@ def parse_float_column(series):
     cleaned = series.astype(str)
     cleaned = cleaned.str.extract(r'([\d.,]+)')[0]
     cleaned = cleaned.str.replace('"', '', regex=False)
-    cleaned = cleaned.str.replace(',', '', regex=False)
+    cleaned = cleaned.str.replace(',', '.', regex=False)
     cleaned = cleaned.str.replace(' ', '', regex=False)
     return pd.to_numeric(cleaned, errors='coerce')
 
@@ -110,7 +111,7 @@ def clean_csv(input_csv, output_csv):
         translated_cols = {}
         for col in df.columns:
             for key, val in TRANSLATION_MAP.items():
-                if key in col:
+                if key == col:
                     translated_cols[col] = val
                     break
 
@@ -119,20 +120,38 @@ def clean_csv(input_csv, output_csv):
 
         # Date filtering and formatting
         if "Date" in df.columns:
-            df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+            df["Date"] = df["Date"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")[0]
+            df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d", errors="coerce")
             df = df[df["Date"] >= pd.Timestamp("2024-01-01")]
             df = df[df["Date"].notna()]
             df["Date"] = df["Date"].dt.strftime("%d/%m/%Y")
 
         for col in df.columns:
-            if col in df.columns and isinstance(df[col], pd.Series):
-                if df[col].dtype == object:
-                    df[col] = df[col].replace(VALUE_TRANSLATION_MAP)
+            if is_object_dtype(df[col]):
+                df[col] = df[col].replace(VALUE_TRANSLATION_MAP)
 
         obs_cols = [col for col in OBS_COLUMNS if col in df.columns]
         if obs_cols:
-            last_valid_idx = df[obs_cols].notna().any(axis=1)[::-1].idxmax()
-            df = df.loc[:last_valid_idx]
+            to_drop = []
+            for idx in reversed(df.index):
+                row = df.loc[idx]
+                if row[obs_cols].isna().all() or (row[obs_cols] == "").all():
+                    to_drop.append(idx)
+                else:
+                    break  # Stop at first valid observation going up from bottom
+
+            df.drop(index=to_drop, inplace=True)
+            df.reset_index(drop=True, inplace=True)
+
+        df["Correction %"] = parse_float_column(df["Correction %"])
+        df["Correction %"] = df["Correction %"].apply(lambda x: x * 100 if pd.notna(x) and 0 < x <= 2 else x).round(1)
+
+        for col in ["Sugar Amount", "Buffer Amount"]:
+            if col in df.columns:
+                df[col] = parse_float_column(df[col]).fillna(0).astype(int)
+
+        if "Adjusted Feed Amount (g)" in df.columns:
+            df["Adjusted Feed Amount (g)"] = parse_float_column(df["Adjusted Feed Amount (g)"]).fillna(0).astype(int)
 
         df.to_csv(output_csv, index=False)
         return True
@@ -152,3 +171,4 @@ if __name__ == "__main__":
             clean_csv(csv_file, cleaned_csv)
 
     # Summary generation will be added after validating cleaning results
+

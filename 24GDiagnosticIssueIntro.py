@@ -33,15 +33,15 @@ start_time = (now - datetime.timedelta(hours=24)).isoformat("T") + "Z"
 # Define full tank config
 tanks_and_nurseries = {
     "Tank1": {
-        "temp": ('LSdata0008', '10.124.101.104'),
-        "PH": ('LSdata0008', '10.124.101.104'),
+        "Temperature": ('LSdata0101', '10.124.101.115'),
+        "PH": ('LSdata0101', '10.124.101.115'),
         "DO mg/L": ('LSdata0010', '10.124.101.101'),
         "CO2 concentration": ('LSdata0022', '10.124.101.108'),
         "Salinity": ('LSdata0027', '10.124.101.106'),
         "Turbidity": ('LSdata0018', '10.124.101.103')
     },
     "Tank2": {
-        "temp": ('LSdata0008', '10.124.102.104'),
+        "Temperature": ('LSdata0008', '10.124.102.114'),
         "PH": ('LSdata0008', '10.124.102.104'),
         "DO mg/L": ('LSdata0010', '10.124.102.101'),
         "CO2 concentration": ('LSdata0022', '10.124.102.108'),
@@ -49,7 +49,7 @@ tanks_and_nurseries = {
         "Turbidity": ('LSdata0018', '10.124.102.103')
     },
     "Tank3": {
-        "temp": ('LSdata0008', '10.124.103.104'),
+        "Temperature": ('LSdata0008', '10.124.103.114'),
         "PH": ('LSdata0008', '10.124.103.104'),
         "DO mg/L": ('LSdata0010', '10.124.103.101'),
         "CO2 concentration": ('LSdata0022', '10.124.103.107'),
@@ -57,12 +57,21 @@ tanks_and_nurseries = {
         "Turbidity": ('LSdata0018', '10.124.103.103')
     },
     "Tank4": {
-        "temp": ('LSdata0008', '10.124.104.104'),
+        "Temperature": ('LSdata0008', '10.124.104.114'),
         "PH": ('LSdata0008', '10.124.104.104'),
         "DO mg/L": ('LSdata0010', '10.124.104.101'),
         "CO2 concentration": ('LSdata0022', '10.124.104.107'),
         "Salinity": ('LSdata0027', '10.124.104.106'),
         "Turbidity": ('LSdata0018', '10.124.104.103')
+    },
+
+    "Tank5": {
+        "Temperature": ('LSdata0008', '10.124.105.100'),
+        "PH": ('LSdata0008', '10.124.105.100'),
+        "DO mg/L": ('LSdata0010', '10.124.105.100'),
+        "CO2 concentration": ('LSdata0022', '10.124.105.100'),
+        "Salinity": ('LSdata0027', '10.124.105.100'),
+        "Turbidity": ('LSdata0018', '10.124.105.100')
     },
     # Repeat for Tank2, Tank3, Tank4, and NurseryA, B, C, D
     # Example for NurseryA
